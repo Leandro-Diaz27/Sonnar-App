@@ -17,3 +17,5 @@ CREATE TABLE Medicamento (
     current_alert_time TIME NOT NULL,
     last_notification_time TIME NULL
 );
+
+
