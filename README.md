@@ -12,7 +12,7 @@ Este proyecto permite gestionar medicamentos, recordatorios y acciones asociadas
 - `/sql/`  
   Scripts de creación de base de datos, índices y restricciones
 
-- `/main.pu/`  
+- `/main.py/`  
   Codigo principal de la aplicación junto con la logica
 
 - `/medicamentos.kv`  
