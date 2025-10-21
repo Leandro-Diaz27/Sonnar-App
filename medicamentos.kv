@@ -1,0 +1,280 @@
+<BaseMDNavigationItem>
+    MDNavigationItemIcon:
+        icon: root.icon
+    MDNavigationItemLabel:
+        text: root.text
+
+<AppHeader@MDBoxLayout>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: dp(60)
+    spacing: dp(15)
+    pos_hint: {'center_x': 0.5, 'top': 1}
+    padding: [0, 0, 0, dp(10)]
+    size_hint_x: None
+    width: dp(300)
+    
+    # Logo en cuadrado blanco con bordes negros
+    MDBoxLayout:
+        size_hint: None, None
+        size: dp(40), dp(43)
+        md_bg_color: 1, 1, 1, 1
+        radius: [dp(8), dp(8), dp(8), dp(8)]
+        pos_hint: {'center_y': 0.5}
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 1
+            Line:
+                rounded_rectangle: (self.x, self.y, self.width, self.height, dp(8))
+                width: 2
+        
+        Image:
+            source: "images/logo6.png"
+            size_hint: None, None
+            size: dp(30), dp(30)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+    
+    # Nombre de la app en grande
+    MDLabel:
+        text: "Sonnar"
+        font_size: "56sp"  # Mucho más grande
+        bold: True
+        theme_text_color: "Custom"
+        text_color: 0.1, 0.1, 0.1, 1
+        halign: 'left'
+        size_hint_x: 1
+        pos_hint: {'center_y': 0.5}
+
+<MedicineScreen>:
+    name: "Medicamentos"
+    md_bg_color: 1, 1, 1, 1  # Fondo blanco
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(8)
+        padding: dp(0)
+
+        # Espaciador superior
+        Widget:
+            size_hint_y: None
+            height: dp(15)
+
+        # Header común de la app
+        AppHeader:
+
+        # Línea divisoria después del header
+        Widget:
+            size_hint_y: None
+            height: dp(0.5)
+            canvas.before:
+                Color:
+                    rgba: 0.7, 0.7, 0.7, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # Lista de medicamentos con scroll
+        ScrollView:
+            size_hint_y: 0.95  # 95% de la pantalla
+            pos_hint: {'top': 0.99}  # Casi hasta arriba
+            
+            MDBoxLayout:
+                id: meds_box
+                orientation: 'vertical'
+                spacing: dp(10)
+                padding: dp(15)
+                size_hint_y: None
+                height: self.minimum_height
+
+
+<AddMedicineScreen>:
+    name: "Agregar"
+    md_bg_color: 1, 1, 1, 1  # Fondo blanco
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(8)
+        padding: dp(0)
+
+        # Espaciador superior
+        Widget:
+            size_hint_y: None
+            height: dp(15)
+
+        # Header común de la app
+        AppHeader:
+
+        # Línea divisoria después del header
+        Widget:
+            size_hint_y: None
+            height: dp(0.5)
+            canvas.before:
+                Color:
+                    rgba: 0.7, 0.7, 0.7, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # Contenido de la pantalla de agregar
+        MDCard:
+            orientation: "vertical"
+            padding: [dp(20), dp(20), dp(20), dp(30)]
+            spacing: dp(12)
+            size_hint_y: 3
+            size_hint_x: 0.9
+            pos_hint: {'center_x': 0.5, 'top': 0.99}
+            line_color: 0, 0, 0, 1
+            canvas:
+                Color:
+                    rgba: 1, 1, 1, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(12), dp(12), dp(12), dp(12)]
+                Color:
+                    rgba: 0.7, 0.7, 0.7, 1
+                Line:
+                    rounded_rectangle: [self.x, self.y, self.width, self.height, dp(12)]
+                    width: 0.5
+            elevation: 4
+            radius: [dp(12), dp(12), dp(12), dp(12)]
+
+            MDLabel:
+                text: ' + Agregar medicamento'
+                halign: 'center'
+                font_size: "24sp"
+                bold: True
+                theme_text_color: "Custom"
+                text_color: 0.1, 0.3, 0.6, 1
+
+            MDButton:
+                id: med_name
+                style: "filled"
+                text: "Toca para seleccionar medicamento"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+                md_bg_color: 0.2, 0.4, 0.8, 1
+                size_hint_y: None
+                height: dp(50)
+                pos_hint: {'center_x': 0.5}
+                on_release: app.show_medication_menu(self)
+                MDButtonText:
+                    text: "Toca para seleccionar medicamento"
+                    theme_text_color: "Custom"
+                    text_color: 1, 1, 1, 1
+
+            MDLabel:
+                text: 'Hora (HH:MM)'
+                font_size: '16sp'
+                halign: 'left'
+                theme_text_color: "Custom"
+                text_color: 0.2, 0.4, 0.6, 1
+            MDTextField:
+                id: med_time
+                mode: "outlined"
+                line_color_focus: 0.2, 0.4, 0.8, 1
+                MDTextFieldHintText:
+                    text: "Ej: 08:30"
+
+            MDLabel:
+                text: 'Cantidad (g)'
+                font_size: '16sp'
+                halign: 'left'
+                theme_text_color: "Custom"
+                text_color: 0.2, 0.4, 0.6, 1
+            MDTextField:
+                id: med_grm
+                mode: "outlined"
+                input_filter: "int"
+                line_color_focus: 0.2, 0.4, 0.8, 1
+                MDTextFieldHintText:
+                    text: "Ej: 500"
+
+            MDLabel:
+                text: 'Por cuántos días'
+                font_size: '16sp'
+                halign: 'left'
+                theme_text_color: "Custom"
+                text_color: 0.2, 0.4, 0.6, 1
+            MDTextField:
+                id: med_days
+                mode: "outlined"
+                input_filter: "int"
+                line_color_focus: 0.2, 0.4, 0.8, 1
+                MDTextFieldHintText:
+                    text: "Ej: 3"
+
+            MDLabel:
+                text: 'Cada cuántas horas'
+                font_size: '16sp'
+                halign: 'left'
+                theme_text_color: "Custom"
+                text_color: 0.2, 0.4, 0.6, 1
+                size_hint_y: None
+                height: dp(20)
+            
+            # Espaciador para separar el label del campo de texto
+            Widget:
+                size_hint_y: None
+                height: dp(8)
+                
+            MDTextField:
+                id: med_hours
+                mode: "outlined"
+                input_filter: "int"
+                line_color_focus: 0.2, 0.4, 0.8, 1
+                MDTextFieldHintText:
+                    text: "Ej: 8"
+
+            MDButton:
+                id: save_button
+                style: "filled"
+                md_bg_color: 0.2, 0.4, 0.8, 1  # Mismo azul
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+                pos_hint: {'center_x': 0.5}
+                size_hint_x: 0.8
+                on_release: app.save_medicine()
+                disabled: True
+                MDButtonIcon:
+                    icon: "check"
+                    theme_icon_color: "Custom"
+                    icon_color: 1, 1, 1, 1
+                MDButtonText:
+                    text: '💾 Guardar Medicamento'
+                    theme_text_color: "Custom"
+                    text_color: 1, 1, 1, 1
+
+
+# Root
+MDBoxLayout:
+    orientation: "vertical"
+    md_bg_color: 1, 1, 1, 1
+
+    MDScreenManager:
+        id: screen_manager
+
+        MedicineScreen:
+        AddMedicineScreen:
+
+    MDNavigationBar:
+        md_bg_color: 0.95, 0.95, 0.95, 1
+        elevation: 4
+        selected_color_background: 0.2, 0.4, 0.8, 1
+        text_color_active: 1, 1, 1, 1
+        text_color_normal: 0.3, 0.3, 0.3, 1
+        canvas.before:
+            Color:
+                rgba: 0.95, 0.95, 0.95, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        on_switch_tabs: app.on_switch_tabs(*args)
+
+        BaseMDNavigationItem:
+            icon: "pill"
+            text: "Medicamentos"
+            active: True
+
+        BaseMDNavigationItem:
+            icon: "plus"
+            text: "Agregar"
+
