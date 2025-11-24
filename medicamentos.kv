@@ -4,6 +4,73 @@
     MDNavigationItemLabel:
         text: root.text
 
+<SplashScreen>:
+    name: "Splash"
+    md_bg_color: 1, 1, 1, 1  # Fondo blanco
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: dp(40)
+        spacing: dp(30)
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        
+        # Espaciador superior
+        Widget:
+            size_hint_y: 1
+        
+        # Logo en el centro
+        MDBoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(220)
+            spacing: dp(15)
+            pos_hint: {'center_x': 0.5}
+            
+            # Contenedor del logo con borde
+            MDBoxLayout:
+                size_hint: None, None
+                size: dp(100), dp(100)
+                md_bg_color: 1, 1, 1, 1
+                radius: [dp(20), dp(20), dp(20), dp(20)]
+                pos_hint: {'center_x': 0.5}
+                canvas.before:
+                    Color:
+                        rgba: 0.2, 0.4, 0.8, 1
+                    Line:
+                        rounded_rectangle: (self.x, self.y, self.width, self.height, dp(20))
+                        width: 3
+                
+                Image:
+                    source: "images/logo6.png"
+                    size_hint: None, None
+                    size: dp(70), dp(70)
+                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            
+            # Nombre de la app
+            MDLabel:
+                text: "Sonnar"
+                font_size: "48sp"
+                bold: True
+                theme_text_color: "Custom"
+                text_color: 0.1, 0.1, 0.1, 1
+                halign: 'center'
+                size_hint_y: None
+                height: dp(60)
+            
+            # Eslogan
+            MDLabel:
+                text: "Nunca fue tan fácil tomar medicamentos"
+                font_size: "16sp"
+                theme_text_color: "Custom"
+                text_color: 0.5, 0.5, 0.5, 1
+                halign: 'center'
+                size_hint_y: None
+                height: dp(40)
+        
+        # Espaciador inferior
+        Widget:
+            size_hint_y: 1
+
 <AppHeader@MDBoxLayout>:
     orientation: 'horizontal'
     size_hint_y: None
@@ -14,7 +81,7 @@
     size_hint_x: None
     width: dp(300)
     
-    # Logo en cuadrado blanco con bordes negros
+    # Logo en cuadrado blanco con bordes azules
     MDBoxLayout:
         size_hint: None, None
         size: dp(40), dp(43)
@@ -23,7 +90,7 @@
         pos_hint: {'center_y': 0.5}
         canvas.before:
             Color:
-                rgba: 0, 0, 0, 1
+                rgba: 0.2, 0.4, 0.8, 1
             Line:
                 rounded_rectangle: (self.x, self.y, self.width, self.height, dp(8))
                 width: 2
@@ -252,15 +319,19 @@ MDBoxLayout:
     MDScreenManager:
         id: screen_manager
 
+        SplashScreen:
         MedicineScreen:
         AddMedicineScreen:
 
     MDNavigationBar:
+        id: nav_bar
         md_bg_color: 0.95, 0.95, 0.95, 1
         elevation: 4
         selected_color_background: 0.2, 0.4, 0.8, 1
         text_color_active: 1, 1, 1, 1
         text_color_normal: 0.3, 0.3, 0.3, 1
+        opacity: 0
+        disabled: True
         canvas.before:
             Color:
                 rgba: 0.95, 0.95, 0.95, 1

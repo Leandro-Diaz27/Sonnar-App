@@ -44,6 +44,10 @@ class AddMedicineScreen(MDScreen):
     pass
 
 
+class SplashScreen(MDScreen):
+    pass
+
+
 class MedicineApp(MDApp):
     medicines = ListProperty([])
     dialog = None
@@ -211,6 +215,16 @@ class MedicineApp(MDApp):
                 int(med_dict['id']),
             ),
         )
+        conn.commit()
+        conn.close()
+
+    def delete_medicine_db(self, med_id):
+        """Elimina un medicamento de la base de datos"""
+        if med_id is None:
+            return
+        conn = sqlite3.connect(self.get_db_path())
+        cur = conn.cursor()
+        cur.execute("DELETE FROM medicamentos WHERE id=?", (int(med_id),))
         conn.commit()
         conn.close()
 
@@ -487,26 +501,37 @@ class MedicineApp(MDApp):
             name_container.add_widget(med_info)
             top_row.add_widget(name_container)
             
-            # Tag de dosis optimizado
-            dose_tag = MDBoxLayout(
-                size_hint_x=None,
-                width=dp(60),  # Reducido
-                height=dp(30),  # Reducido
-                md_bg_color=border_color,
-                radius=[dp(15), dp(15), dp(15), dp(15)],
-                padding=[dp(6), dp(4), dp(6), dp(4)],  # Padding reducido
+            # Botón de información con icono de exclamación
+            info_button = MDButton(
+                style="text",
+                on_release=lambda x, m=med: self.show_medication_info(m),
+                size_hint=(None, None),
+                size=(dp(40), dp(40)),
                 pos_hint={'center_y': 0.5}
             )
-            dose_label = MDLabel(
-                text=f"{med['grams']}g",
+            info_icon = MDButtonIcon(
+                icon="information",
                 theme_text_color="Custom",
-                text_color=(1, 1, 1, 1),
-                font_size="12sp",  # Reducido
-                bold=True,
-                halign='center'
+                text_color=(0.2, 0.6, 0.9, 1)  # Azul
             )
-            dose_tag.add_widget(dose_label)
-            top_row.add_widget(dose_tag)
+            info_button.add_widget(info_icon)
+            top_row.add_widget(info_button)
+            
+            # Botón de eliminar en la esquina superior derecha
+            delete_button = MDButton(
+                style="text",
+                on_release=lambda x, m=med: self.confirm_delete_medicine(m),
+                size_hint=(None, None),
+                size=(dp(40), dp(40)),
+                pos_hint={'center_y': 0.5}
+            )
+            delete_icon = MDButtonIcon(
+                icon="delete",
+                theme_text_color="Custom",
+                text_color=(0.9, 0.3, 0.3, 1)  # Rojo suave
+            )
+            delete_button.add_widget(delete_icon)
+            top_row.add_widget(delete_button)
             
             med_container.add_widget(top_row)
             
@@ -655,52 +680,38 @@ class MedicineApp(MDApp):
                 spacing=dp(12)  # Espaciado reducido
             )
             
-            # Cada cuántas horas
+            # Cada cuántas horas (sin icono)
             hours_info = MDBoxLayout(
                 orientation='horizontal',
                 size_hint_x=0.5,
-                spacing=dp(3)  # Espaciado reducido
-            )
-            hours_icon = MDLabel(
-                text="⏰",
-                font_size="10sp",  # Reducido
-                size_hint_x=None,
-                width=dp(16)  # Reducido
+                spacing=dp(3)
             )
             hours_text = MDLabel(
                 text=f"Cada {med['hours']}h",
                 theme_text_color="Custom",
-                text_color=(0.35, 0.35, 0.35, 1),  # Gris oscuro moderado
+                text_color=(0.35, 0.35, 0.35, 1),
                 font_size="10sp",
                 bold=True,
                 size_hint_x=1,
                 halign="left"
             )
-            hours_info.add_widget(hours_icon)
             hours_info.add_widget(hours_text)
             
-            # Días restantes
+            # Días restantes (sin icono)
             days_info = MDBoxLayout(
                 orientation='horizontal',
                 size_hint_x=0.5,
                 spacing=dp(3)
             )
-            days_icon = MDLabel(
-                text="📅",
-                font_size="10sp",
-                size_hint_x=None,
-                width=dp(16)
-            )
             days_text = MDLabel(
                 text=f"{med['days']} días restantes",
                 theme_text_color="Custom",
-                text_color=(0.35, 0.35, 0.35, 1),  # Gris oscuro moderado
+                text_color=(0.35, 0.35, 0.35, 1),
                 font_size="10sp",
                 bold=True,
                 size_hint_x=1,
                 halign="left"
             )
-            days_info.add_widget(days_icon)
             days_info.add_widget(days_text)
             
             frequency_row.add_widget(hours_info)
@@ -831,9 +842,150 @@ class MedicineApp(MDApp):
         hours = add_screen.ids.med_hours.text
         add_screen.ids.save_button.disabled = not (name and time.strip() and grams.strip() and days.strip() and hours.strip())
 
+    def show_medication_info(self, med):
+        """Muestra un diálogo con información detallada del medicamento"""
+        if self.dialog:
+            self.dialog.dismiss()
+
+        # Obtener información adicional del medicamento si existe en la lista
+        med_info = self.get_medication_info(med['name'])
+        description = med_info['description'] if med_info else "Sin descripción disponible"
+        
+        # Calcular progreso
+        total_doses, expected_doses, taken_doses = self.get_medication_progress(med)
+        progress_percentage = int((taken_doses / total_doses * 100)) if total_doses > 0 else 0
+        
+        info_text = f"""• Medicamento: {med['name']}
+
+• Descripción: {description}
+
+• Dosis: {med['grams']}mg
+
+• Frecuencia: Cada {med['hours']} horas
+
+• Duración: {med['days']} días
+
+• Progreso: {taken_doses}/{total_doses} dosis ({progress_percentage}%)
+
+• Hora de inicio: {med['time']}"""
+
+        self.dialog = MDDialog(
+            MDDialogHeadlineText(
+                text="Información del Medicamento",
+                halign="center",
+                theme_text_color="Custom",
+                text_color=(0.2, 0.6, 0.9, 1),
+                font_size="20sp",
+                bold=True
+            ),
+            MDDialogSupportingText(
+                text=info_text,
+                halign="left",
+                theme_text_color="Custom",
+                text_color=(0.4, 0.4, 0.4, 1),
+                font_size="14sp"
+            ),
+            MDDialogButtonContainer(
+                MDButton(
+                    MDButtonText(
+                        text="Cerrar",
+                        theme_text_color="Custom",
+                        text_color=(1, 1, 1, 1),
+                        font_size="14sp",
+                        bold=True
+                    ),
+                    style="filled",
+                    md_bg_color=(0.2, 0.6, 0.9, 1),
+                    on_release=lambda x: self.dialog.dismiss()
+                ),
+                spacing="16dp"
+            ),
+            size_hint=(0.9, None),
+            height=dp(450),
+            radius=[dp(20), dp(20), dp(20), dp(20)],
+            elevation=8
+        )
+        self.dialog.open()
+
+
+    def confirm_delete_medicine(self, med):
+        """Muestra un diálogo de confirmación antes de eliminar un medicamento"""
+        if self.dialog:
+            self.dialog.dismiss()
+
+        def delete_confirmed(*args):
+            # Eliminar de la base de datos
+            if 'id' in med and med['id'] is not None:
+                self.delete_medicine_db(med['id'])
+            
+            # Eliminar de la lista en memoria
+            if med in self.medicines:
+                self.medicines.remove(med)
+            
+            # Actualizar la vista
+            self.update_meds_list()
+            self.dialog.dismiss()
+
+        self.dialog = MDDialog(
+            MDDialogHeadlineText(
+                text="¿Eliminar medicamento?",
+                halign="center",
+                theme_text_color="Custom",
+                text_color=(0.9, 0.3, 0.3, 1),
+                font_size="20sp",
+                bold=True
+            ),
+            MDDialogSupportingText(
+                text=f"¿Estás seguro de que deseas eliminar\n{med['name']}?\n\nEsta acción no se puede deshacer.",
+                halign="center",
+                theme_text_color="Custom",
+                text_color=(0.4, 0.4, 0.4, 1),
+                font_size="16sp"
+            ),
+            MDDialogButtonContainer(
+                MDButton(
+                    MDButtonText(
+                        text="Cancelar",
+                        theme_text_color="Custom",
+                        text_color=(0.6, 0.6, 0.6, 1),
+                        font_size="14sp"
+                    ),
+                    style="outlined",
+                    line_color=(0.6, 0.6, 0.6, 1),
+                    on_release=lambda x: self.dialog.dismiss()
+                ),
+                MDButton(
+                    MDButtonText(
+                        text="Eliminar",
+                        theme_text_color="Custom",
+                        text_color=(1, 1, 1, 1),
+                        font_size="14sp",
+                        bold=True
+                    ),
+                    style="filled",
+                    md_bg_color=(0.9, 0.3, 0.3, 1),
+                    on_release=delete_confirmed
+                ),
+                spacing="16dp"
+            ),
+            size_hint=(0.85, None),
+            height=dp(250),
+            radius=[dp(20), dp(20), dp(20), dp(20)],
+            elevation=8
+        )
+        self.dialog.open()
+
 
 
     def on_start(self):
+        # Mostrar splash screen primero
+        self.root.ids.screen_manager.current = "Splash"
+        
+        # Programar el cambio a la pantalla principal después de 1.5 segundos
+        Clock.schedule_once(self.show_main_screen, 1.5)
+
+    def show_main_screen(self, dt):
+        """Cambia a la pantalla principal después de la splash screen"""
         # Inicializar y cargar DB
         self.init_db()
         self.load_medicines_from_db()
@@ -849,6 +1001,14 @@ class MedicineApp(MDApp):
         add_screen.ids.med_grm.bind(text=self.on_text_fields_change)
         add_screen.ids.med_days.bind(text=self.on_text_fields_change)
         add_screen.ids.med_hours.bind(text=self.on_text_fields_change)
+        
+        # Mostrar el navbar
+        self.root.ids.nav_bar.opacity = 1
+        self.root.ids.nav_bar.disabled = False
+        
+        # Cambiar a la pantalla de medicamentos
+        self.root.ids.screen_manager.current = "Medicamentos"
+
 
     def check_reminders(self, dt):
         now = datetime.now().strftime("%H:%M")
@@ -929,7 +1089,7 @@ class MedicineApp(MDApp):
                                 bold=True
                             ),
                             MDDialogSupportingText(
-                                text=f"💊 {med['name']} ({med['grams']}g)\n\n📅 Dosis: {med.get('taken_doses', 0) + 1}/{med.get('total_doses', 0)}\n\n🕐 Hora: {current_time}{delay_text}",
+                                text=f"{med['name']} ({med['grams']}mg)\n\nDosis: {med.get('taken_doses', 0) + 1}/{med.get('total_doses', 0)}\n\nHora: {current_time}{delay_text}",
                                 halign="center",
                                 theme_text_color="Custom",
                                 text_color=(0.4, 0.4, 0.4, 1),
