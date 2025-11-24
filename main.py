@@ -1098,7 +1098,7 @@ class MedicineApp(MDApp):
                             MDDialogButtonContainer(
                                 MDButton(
                                     MDButtonText(
-                                        text="⏰ Retrasar 5 min",
+                                        text="Retrasar 5 min",
                                         theme_text_color="Custom",
                                         text_color=(0.6, 0.6, 0.6, 1),
                                         font_size="14sp"
@@ -1109,7 +1109,7 @@ class MedicineApp(MDApp):
                                 ),
                                 MDButton(
                                     MDButtonText(
-                                        text="✓ Ya lo tomé",
+                                        text="Ya lo tomé",
                                         theme_text_color="Custom",
                                         text_color=(1, 1, 1, 1),
                                         font_size="14sp",
